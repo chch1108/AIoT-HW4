@@ -32,9 +32,17 @@ selected_persona = st.selectbox(
     index=current_idx,
 )
 
+def safe_rerun() -> None:
+    """Use new Streamlit rerun API while keeping compatibility."""
+    if hasattr(st, "rerun"):
+        st.rerun()  # type: ignore[attr-defined]
+    else:  # pragma: no cover
+        st.experimental_rerun()
+
+
 if selected_persona != orchestrator.persona.name:
     orchestrator.switch_persona(selected_persona)
-    st.experimental_rerun()
+    safe_rerun()
 
 st.info(
     f"{orchestrator.persona.description}｜好感目標 {orchestrator.persona.persona_goal}，"
@@ -46,7 +54,7 @@ with st.form("chat-form", clear_on_submit=True):
     submitted = st.form_submit_button("送出")
     if submitted and user_message.strip():
         orchestrator.run_turn(user_message.strip())
-        st.experimental_rerun()
+        safe_rerun()
 
 state = orchestrator.state
 
@@ -74,7 +82,7 @@ else:
                 reveal = st.button("偷看內心", key=f"reveal_{turn.idx}")
                 if reveal:
                     orchestrator.reveal_turn(turn.idx)
-                    st.experimental_rerun()
+                    safe_rerun()
                 st.markdown(f"**Stage 1 Thinking**: {turn.masked_stage1}")
             st.caption(f"好感變化：{turn.affinity_delta:+d}")
             st.divider()
