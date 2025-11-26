@@ -8,6 +8,8 @@ import streamlit as st
 
 from aiot_hw4 import ConversationOrchestrator, PERSONA_REGISTRY, LLMClient
 
+DEFAULT_GENAI_MODEL = "gemini-1.5-flash-latest"
+
 DISPLAY_LABELS = {
     "Tsundere": "傲嬌式",
     "Corporate Speak": "職場黑話",
@@ -37,7 +39,7 @@ def get_genai_key() -> str | None:
 def get_genai_model_name() -> str:
     if "GENAI_MODEL_NAME" in st.secrets:
         return st.secrets["GENAI_MODEL_NAME"]
-    return os.environ.get("GENAI_MODEL_NAME", "gemini-1.5-flash")
+    return os.environ.get("GENAI_MODEL_NAME", DEFAULT_GENAI_MODEL)
 
 
 def sync_llm_client() -> None:
