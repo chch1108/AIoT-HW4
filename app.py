@@ -6,6 +6,14 @@ import streamlit as st
 
 from aiot_hw4 import ConversationOrchestrator, PERSONA_REGISTRY
 
+DISPLAY_LABELS = {
+    "Tsundere": "傲嬌式",
+    "Corporate Speak": "職場黑話",
+    "Luxun Critic": "魯迅：憤青式",
+    "Cat Overlord": "貓咪主子",
+    "Stoic Mentor": "佛系：斯多葛",
+}
+
 st.set_page_config(
     page_title="AIoT HW4 – Multi-Persona CoT",
     page_icon="⭐️",
@@ -25,12 +33,15 @@ st.title("Multi-Persona Two-Stage CoT Playground")
 st.caption("完成傲嬌、社畜、魯迅、貓主子與斯多葛導師等五種人格的兩階段演算。")
 
 persona_names = list(PERSONA_REGISTRY.keys())
+display_names = [DISPLAY_LABELS.get(name, name) for name in persona_names]
 current_idx = persona_names.index(orchestrator.persona.name)
-selected_persona = st.selectbox(
+selected_display = st.selectbox(
     "選擇人格 persona",
-    persona_names,
+    display_names,
     index=current_idx,
 )
+display_to_persona = {display: name for display, name in zip(display_names, persona_names)}
+selected_persona = display_to_persona[selected_display]
 
 def safe_rerun() -> None:
     """Use new Streamlit rerun API while keeping compatibility."""
