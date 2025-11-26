@@ -8,8 +8,6 @@ import streamlit as st
 
 from aiot_hw4 import ConversationOrchestrator, PERSONA_REGISTRY, LLMClient
 
-DEFAULT_GENAI_MODEL = "gemini-1.5-flash-latest"
-
 DISPLAY_LABELS = {
     "Tsundere": "傲嬌式",
     "Corporate Speak": "職場黑話",
@@ -31,15 +29,20 @@ def init_state() -> None:
 
 
 def get_genai_key() -> str | None:
-    if "GENAI_API_KEY" in st.secrets:
-        return st.secrets["GENAI_API_KEY"]
-    return os.environ.get("GENAI_API_KEY")
+    secret_sources = ["GENAI_API_KEY", "GOOGLE_API_KEY"]
+    for key in secret_sources:
+        if key in st.secrets:
+            return st.secrets[key]
+    for key in secret_sources:
+        if key in os.environ:
+            return os.environ[key]
+    return None
 
 
 def get_genai_model_name() -> str:
     if "GENAI_MODEL_NAME" in st.secrets:
         return st.secrets["GENAI_MODEL_NAME"]
-    return os.environ.get("GENAI_MODEL_NAME", DEFAULT_GENAI_MODEL)
+    return os.environ.get("GENAI_MODEL_NAME", "")
 
 
 def sync_llm_client() -> None:
@@ -58,7 +61,7 @@ def sync_llm_client() -> None:
         st.session_state.orchestrator.set_llm_client(None)
         return
     try:
-        llm_client = LLMClient(api_key=api_key, model_name=model_name)
+        llm_client = LLMClient(api_key=api_key, model_name=model_name or None)
         st.session_state.llm_client = llm_client
         st.session_state.llm_api_key = api_key
         st.session_state.llm_error = None

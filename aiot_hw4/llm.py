@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Sequence, Tuple
 
 try:
     import google.generativeai as genai
@@ -21,11 +21,18 @@ Given the persona information and the user's input, produce JSON with exactly tw
 - stage2: the outward response that the user can see, following Stage 2 instructions.
 Keep it concise (<= 3 sentences each), write in the persona's voice, and stay in Traditional Chinese when appropriate."""
 
+DEFAULT_MODEL_CANDIDATES = (
+    "gemini-2.0-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-1.5-flash",
+)
+
 
 @dataclass
 class LLMClient:
     api_key: str
-    model_name: str = "gemini-1.5-flash"
+    model_name: str | None = None
+    model_candidates: Sequence[str] = DEFAULT_MODEL_CANDIDATES
 
     def __post_init__(self) -> None:
         if genai is None:
@@ -36,7 +43,7 @@ class LLMClient:
         if not self.api_key:
             raise ValueError("GENAI API key is required")
         genai.configure(api_key=self.api_key)
-        self._model = genai.GenerativeModel(self.model_name)
+        self._model = self._init_model()
 
     def generate(self, persona, user_message: str) -> Tuple[str, str]:
         prompt = self._build_prompt(persona, user_message)
@@ -72,3 +79,26 @@ class LLMClient:
         if not stage1 or not stage2:
             raise ValueError("LLM response missing stage1/stage2 fields")
         return stage1.strip(), stage2.strip()
+
+    def _init_model(self):
+        errors = []
+        for name in self._ordered_candidates():
+            try:
+                model = genai.GenerativeModel(name)
+                self.model_name = name
+                return model
+            except Exception as exc:  # pragma: no cover - remote dependency
+                errors.append(f"{name}: {exc}")
+        joined = "; ".join(errors) if errors else "unknown error"
+        raise RuntimeError(f"Unable to initialize Gemini model ({joined})")
+
+    def _ordered_candidates(self) -> Tuple[str, ...]:
+        candidates = []
+        if self.model_name:
+            candidates.append(self.model_name)
+        for name in self.model_candidates:
+            if name not in candidates:
+                candidates.append(name)
+        if not candidates:
+            candidates.extend(DEFAULT_MODEL_CANDIDATES)
+        return tuple(candidates)
