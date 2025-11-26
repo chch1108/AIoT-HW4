@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from .engines import RPGEngine, TwoStageCoTEngine
-from .personas import PERSONA_REGISTRY, Persona
+from .personas import PERSONA_REGISTRY, Persona, PersonaResponse
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .llm import LLMClient
 
 
 @dataclass
@@ -34,10 +37,12 @@ class ConversationState:
 class ConversationOrchestrator:
     """Encapsulates gameplay-level flow control."""
 
-    def __init__(self, persona_name: str = "Tsundere") -> None:
+    def __init__(self, persona_name: str = "Tsundere", llm_client: "LLMClient | None" = None) -> None:
         self.cot_engine = TwoStageCoTEngine()
         self.rpg_engine = RPGEngine()
         self._persona = PERSONA_REGISTRY[persona_name]
+        self.llm_client = llm_client
+        self.last_llm_error: str | None = None
         self.state = ConversationState(
             persona_name=self._persona.name,
             turn=0,
@@ -49,6 +54,11 @@ class ConversationOrchestrator:
     @property
     def persona(self) -> Persona:
         return self._persona
+
+    def set_llm_client(self, llm_client: "LLMClient | None") -> None:
+        self.llm_client = llm_client
+        if llm_client is None:
+            self.last_llm_error = None
 
     def switch_persona(self, persona_name: str) -> None:
         self._persona = PERSONA_REGISTRY[persona_name]
@@ -65,7 +75,28 @@ class ConversationOrchestrator:
         if self.state.status != "CONTINUE":
             return self.state
 
-        cot_result = self.cot_engine.run(self._persona, message, self.state.turn, self.state.affinity)
+        forced_response: PersonaResponse | None = None
+        if self.llm_client:
+            try:
+                stage1, stage2 = self.llm_client.generate(self._persona, message)
+                delta = self._persona.affinity_delta(message, stage2)
+                forced_response = PersonaResponse(
+                    persona=self._persona.name,
+                    stage1=stage1,
+                    stage2=stage2,
+                    affinity_delta=delta,
+                )
+                self.last_llm_error = None
+            except Exception as exc:  # pragma: no cover - network related
+                self.last_llm_error = str(exc)
+
+        cot_result = self.cot_engine.run(
+            self._persona,
+            message,
+            self.state.turn,
+            self.state.affinity,
+            forced_response=forced_response,
+        )
         new_turn = ConversationTurn(
             idx=self.state.turn + 1,
             user_message=message,

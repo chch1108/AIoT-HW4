@@ -38,3 +38,13 @@ Once the browser UI opens:
 4. Watch the turn counter, affinity progress, and endings triggered by persona-specific goals.
 
 Have fun mind-reading the characters while surviving the 10-turn limit!
+
+## Enabling LLM mode
+
+The default gameplay uses hand-written templates, but you can hook it up to Google Gemini for richer persona replies:
+
+1. Obtain a Google Generative AI key and set `GENAI_API_KEY` in Streamlit secrets (or as an environment variable locally).
+2. (Optional) Set `GENAI_MODEL_NAME` if you want a different Gemini variant. It defaults to `gemini-1.5-flash`.
+3. Deploy/run the app again—when the key loads successfully the UI will show “LLM 模式啟用…”.
+
+If the key is missing or the API call fails, the orchestrator automatically falls back to the built-in templates so the experience keeps working.

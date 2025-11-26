@@ -3,6 +3,7 @@
 from .personas import PERSONA_REGISTRY, PersonaResponse
 from .engines import TwoStageCoTEngine, RPGEngine
 from .orchestrator import ConversationOrchestrator, ConversationTurn
+from .llm import LLMClient
 
 __all__ = [
     "PERSONA_REGISTRY",
@@ -11,4 +12,5 @@ __all__ = [
     "RPGEngine",
     "ConversationOrchestrator",
     "ConversationTurn",
+    "LLMClient",
 ]

@@ -62,9 +62,22 @@ class TsunderePersona(Persona):
         )
 
     def stage2_response(self, stage1_text: str, user_message: str) -> str:
+        lowered = user_message.lower()
+        sweet_words = ["喜歡", "like", "love", "愛", "可愛"]
+        if any(word in lowered for word in sweet_words):
+            return (
+                "你、你在亂講什麼啦！誰需要你這麼直接告白，我只是怕你難過才理你。"
+                "總之別想太多，頂多陪你一下下而已。"
+            )
+        help_words = ["幫", "help", "作業", "homework", "功課"]
+        if any(word in lowered for word in help_words):
+            return (
+                "哼，明明自己可以搞定還要找我。"
+                "好吧，看在你這麼誠懇的份上我或許會指點一下，別指望我一直罩著你。"
+            )
         return (
             "哼，我又不是特別想聽你說那些啦，只是怕你太遲鈍才回你一句。"
-            "不過既然你都開口了…也許我會稍微陪你聊一下，別想太多。"
+            "不過既然你都開口了…也許我會稍微陪你聊一下，別太開心。"
         )
 
     def affinity_delta(self, user_message: str, stage2_text: str) -> int:
@@ -85,9 +98,22 @@ class CorporatePersona(Persona):
         )
 
     def stage2_response(self, stage1_text: str, user_message: str) -> str:
+        lowered = user_message.lower()
+        schedule_words = ["排程", "時程", "schedule", "deadline", "延後"]
+        praise_words = ["讚", "棒", "感謝", "謝謝", "thanks"]
+        if any(word in lowered for word in schedule_words):
+            return (
+                "感謝同步，我們會滾動檢視里程碑並重新評估資源配置，"
+                "確保 deadline 與交付物的一致性。屆時再給你調整後的甘特圖。"
+            )
+        if any(word in lowered for word in praise_words):
+            return (
+                "謝謝肯定，我們會持續優化流程並維持高品質輸出，"
+                "也歡迎你隨時提供更多洞見讓團隊共好。"
+            )
         return (
-            "感謝你的 input，我們會啟動跨部門資源調配，確保這波需求與"
-            "既有里程碑對齊。待確認風險後會再提供最新同步。"
+            "感謝你的 input，我們會啟動跨部門資源調配，確保本次需求與既有里程碑對齊。"
+            "待確認風險後會再提供最新同步。"
         )
 
     def affinity_delta(self, user_message: str, stage2_text: str) -> int:
@@ -109,9 +135,21 @@ class LuxunPersona(Persona):
         )
 
     def stage2_response(self, stage1_text: str, user_message: str) -> str:
+        lowered = user_message.lower()
+        if "?" in user_message:
+            return (
+                "你問的問題並非無聊，而是整個社會久病未癒的症狀。"
+                "若我們只想要答案，卻不敢拆掉腐朽的根，還是會在黑夜裡徘徊。"
+            )
+        serious_words = ["制度", "社會", "階級", "命運", "壓迫"]
+        if any(word in lowered for word in serious_words):
+            return (
+                "這不只是抱怨，而是制度長年堆出的沉疴。"
+                "若仍選擇噤聲，下一個被吞噬的就是我們自己。"
+            )
         return (
-            "這不只是小事，而是國民性長久以來的欠缺，"
-            "如果連這點都接受，那我們也只能在昏黃燈光下繼續夢遊。"
+            "這不只是小事，而是國民性長久以來的欠缺。"
+            "若連這點都選擇麻木，那我們也只能在昏黃燈光下繼續夢遊。"
         )
 
     def affinity_delta(self, user_message: str, stage2_text: str) -> int:
@@ -132,6 +170,19 @@ class CatOverlordPersona(Persona):
         )
 
     def stage2_response(self, stage1_text: str, user_message: str) -> str:
+        lowered = user_message.lower()
+        treat_words = ["罐", "罐罐", "罐頭", "treat", "零食"]
+        play_words = ["玩", "toy", "逗", "laser", "羽毛"]
+        if any(word in lowered for word in treat_words):
+            return (
+                "很好，人類終於知道貢獻有價值的供品。"
+                "把罐罐加熱再端上來，我也許會在你面前優雅地舔一口。"
+            )
+        if any(word in lowered for word in play_words):
+            return (
+                "想陪朕玩？先把逗貓棒舉高，保持節奏。"
+                "若讓我無聊，你今天的膝蓋資格就收回。"
+            )
         return (
             "人類，把墊子拍鬆再來說話。我也許會考慮在你完成任務後"
             "賞你一聲呼嚕，現在先去準備點心。"
@@ -155,6 +206,19 @@ class StoicMentorPersona(Persona):
         )
 
     def stage2_response(self, stage1_text: str, user_message: str) -> str:
+        lowered = user_message.lower()
+        anxious_words = ["怕", "害怕", "焦慮", "緊張", "anxious", "worry"]
+        plan_words = ["計畫", "plan", "方向", "下一步"]
+        if any(word in lowered for word in anxious_words):
+            return (
+                "你察覺到害怕本身，就是覺醒。"
+                "試著在呼吸間提醒自己：事件只是一連串可以處理的步驟，而非必須對抗的怪獸。"
+            )
+        if any(word in lowered for word in plan_words):
+            return (
+                "先定義你能掌控的最小行動，再讓它帶你往前。"
+                "把注意力放在一步步的實踐，方向自然會在靜心的間隙浮現。"
+            )
         return (
             "讓情緒像潮汐來去，你不必抓緊它們。調整呼吸，"
             "把注意力放在此刻的行動，答案就會浮現。"

@@ -20,8 +20,15 @@ def _mask_text(text: str) -> str:
 class TwoStageCoTEngine:
     """Runs Stage 1/Stage 2 for the activated persona."""
 
-    def run(self, persona: Persona, user_message: str, turn: int, affinity: int) -> CoTResult:
-        persona_response = persona.generate_response(user_message, turn, affinity)
+    def run(
+        self,
+        persona: Persona,
+        user_message: str,
+        turn: int,
+        affinity: int,
+        forced_response: PersonaResponse | None = None,
+    ) -> CoTResult:
+        persona_response = forced_response or persona.generate_response(user_message, turn, affinity)
         masked = _mask_text(persona_response.stage1)
         return CoTResult(response=persona_response, masked_stage1=masked)
 
